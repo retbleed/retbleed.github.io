@@ -15,11 +15,6 @@ function updateVariables(newScreenWH) {
 
 updateVariables(canvas.width);
 
-
-function calcObstacles(x) {
-  return x + 1;
-}
-
 const grid = [];
 for (let i = 0; i < rows; i++) {
   for (let j = 0; j < cols; j++) {
