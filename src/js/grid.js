@@ -24,7 +24,7 @@ export const createGrid = (rows, cols, amountOfObstacles) => {
   return grid;
 };
 
-export function removeObstacles(grid, x, y, cols) {
+export function removeObstacles(grid, x, y, cols, state) {
   if (!Array.isArray(grid)) {
     throw new Error('Grid must be an array'); // Por alguna razon esta madre quiebra si no esta ahi
   }
@@ -34,19 +34,19 @@ export function removeObstacles(grid, x, y, cols) {
 
     // Debe de haber una forma menos cochina para hacer esto, pero ahorita mi cerebro no funciona.
     if ((row === y && col === x) && grid[i] !== 0) {
-      grid[i] = 3;
+      grid[i] = state;
     }
     if ((row === y - 1 && col === x) && grid[i] !== 0) {
-      grid[i] = 3;
+      grid[i] = state;
     }
     if ((row === y + 1 && col === x) && grid[i] !== 0) {
-      grid[i] = 3;
+      grid[i] = state;
     }
     if ((row === y && col === x - 1) && grid[i] !== 0) {
-      grid[i] = 3;
+      grid[i] = state;
     }
     if ((row === y && col === x + 1) && grid[i] !== 0) {
-      grid[i] = 3;
+      grid[i] = state;
     }
   }
 }
