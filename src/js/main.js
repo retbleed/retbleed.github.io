@@ -1,4 +1,5 @@
 import { createGrid, removeObstacles } from './grid.js';
+import { inputController } from './input.js';
 /* import { object } from './object.js'; */
 
 const canvas = document.getElementById('canvas');
@@ -11,6 +12,8 @@ var isPaused = false;
 
 // let playerImg = new Image(); playerImg.src = "../media/sprites/wall.png";
 let wallImg = new Image(); wallImg.src = "src/media/sprites/wall.png";
+let breakableWallImg = new Image(); breakableWallImg.src = "src/media/sprites/breakable_wall.png";
+let floorImg = new Image(); floorImg.src = "src/media/sprites/floor.png";
 // const sound1 = new Audio("source/sound/luffyEatSound.mp3");
 
 function updateVariables() {
@@ -53,8 +56,20 @@ class object {
     return false;
   }
 }
-const player = new object(0, 0, null, tileSize, null);
+
 const grid = createGrid(rows, cols, amountOfObstacles);
+// Make a function to find the spaces with 1 and put the player there
+let x;
+let y;
+for (let i = 0; i < grid.length; i++) {
+  if (grid[i] === 1) {
+    x = i % cols;
+    y = Math.floor(i / cols);
+    break;
+  }
+}
+const player = new object(x, y, 'red', tileSize, null);
+inputController(player);
 
 // removeObstacles(grid, x, y, cols, 3); // STATUS: BOMBA
 // removeObstacles(grid, x, y, cols, 1); // STATUS: CLEAN
@@ -65,7 +80,6 @@ removeObstacles(grid, x + 1, y, cols);
 removeObstacles(grid, x, y - 1, cols);
 removeObstacles(grid, x, y + 1, cols); */
 
-let totalFloor = [];
 let walls = [];
 let breakableWalls = [];
 let floor = [];
@@ -75,7 +89,7 @@ let bombExp = [];
 function update() {
   if (isPaused) { repaint(); window.requestAnimationFrame(update); return; }
 
-
+  
 
   repaint();
   window.requestAnimationFrame(update);
@@ -90,33 +104,13 @@ function repaint() {
     for (let j = 0; j < cols; j++) {
       const cell = grid[i * cols + j];
       if (cell === 1) {
-
-        floor.push(new object(j, i, 'white', tileSize));
-        totalFloor.push('Estoy loco');
-        /* ctx.fillStyle = 'white';
-        ctx.fillRect(j * tileSize, i * tileSize, tileSize, tileSize); */
-
+        floor.push(new object(j, i, null, tileSize, floorImg));
       } else if (cell === 2) {
-
-        breakableWalls.push(new object(j, i, 'orange', tileSize));
-        totalFloor.push('Estoy loco');
-        /* ctx.fillStyle = 'orange';
-        ctx.fillRect(j * tileSize, i * tileSize, tileSize, tileSize); */
-
+        breakableWalls.push(new object(j, i, null, tileSize, breakableWallImg));
       } else if (cell === 3) {
-
         bombExp.push(new object(j, i, 'blue', tileSize));
-        totalFloor.push('Estoy loco');
-        /* ctx.fillStyle = 'blue';
-        ctx.fillRect(j * tileSize, i * tileSize, tileSize, tileSize); */
-
       } else {
-
         walls.push(new object(j, i, null, tileSize, wallImg));
-        totalFloor.push('Estoy loco');
-        /* ctx.fillStyle = 'black';
-        ctx.fillRect(j * tileSize, i * tileSize, tileSize, tileSize); */
-
       }
     }
   }
@@ -133,6 +127,8 @@ function repaint() {
   for (let i = 0; i < breakableWalls.length; i++) {
     breakableWalls[i].paint(ctx);
   }
+
+  player.paint(ctx);
 
   if (isPaused) {
     ctx.fillStyle = "rgba(0,0,0,0.7)";
