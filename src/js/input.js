@@ -9,7 +9,13 @@ export function inputController(character) {
         } else if (event.code === 'ArrowRight') {
             character.x += 1;
         } else if (event.code === 'Space') {
-            return 'bomb';
+            return true;
+        } else if(event.code === 'KeyP') {
+            if (isPaused) {
+                isPaused = false;
+            }else {
+                isPaused = true;
+            }
         }
     });
 }

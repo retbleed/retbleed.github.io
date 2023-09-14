@@ -1,5 +1,4 @@
 import { createGrid, removeObstacles } from './grid.js';
-import { inputController } from './input.js';
 /* import { object } from './object.js'; */
 
 const canvas = document.getElementById('canvas');
@@ -8,6 +7,11 @@ let rows = 15;
 let cols = 15;
 let tileSize = 65;
 var amountOfObstacles = 50;
+var isPaused = false;
+
+// let playerImg = new Image(); playerImg.src = "../media/sprites/wall.png";
+let wallImg = new Image(); wallImg.src = "src/media/sprites/wall.png";
+// const sound1 = new Audio("source/sound/luffyEatSound.mp3");
 
 function updateVariables() {
   const ratio = canvas.width / canvas.height;
@@ -21,23 +25,36 @@ updateVariables();
 // Queria que Object fuera modulo pero ya no se que estoy haciendo, dios ayuda
 
 class object {
-  constructor(x, y, color, size) {
+  constructor(x, y, color = null, size, image = null) {
     this.x = x;
     this.y = y;
     this.color = color;
     this.size = size;
+    this.image = image;
   }
 
   paint(ctx) {
-    ctx.fillStyle = this.color;
-    ctx.fillRect(this.x * this.size, this.y * this.size, this.size, this.size);
+    if (this.image) {
+      ctx.drawImage(this.image, this.x * this.size, this.y * this.size, this.size, this.size);
+    } else {
+      ctx.fillStyle = this.color;
+      ctx.fillRect(this.x * this.size, this.y * this.size, this.size, this.size);
+    }
+  }
+
+  itCollides(target) {
+
+    if (this.x < target.x + target.w &&
+      this.x + this.w > target.x &&
+      this.y < target.y + target.h &&
+      this.y + this.h > target.y) {
+      return true;
+    }
+    return false;
   }
 }
-
+const player = new object(0, 0, null, tileSize, null);
 const grid = createGrid(rows, cols, amountOfObstacles);
-
-let x = 9;
-let y = 5;
 
 // removeObstacles(grid, x, y, cols, 3); // STATUS: BOMBA
 // removeObstacles(grid, x, y, cols, 1); // STATUS: CLEAN
@@ -54,8 +71,20 @@ let breakableWalls = [];
 let floor = [];
 let bombExp = [];
 
-function draw() {
 
+function update() {
+  if (isPaused) { repaint(); window.requestAnimationFrame(update); return; }
+
+
+
+  repaint();
+  window.requestAnimationFrame(update);
+}
+
+
+
+
+function repaint() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   for (let i = 0; i < rows; i++) {
     for (let j = 0; j < cols; j++) {
@@ -83,7 +112,7 @@ function draw() {
 
       } else {
 
-        walls.push(new object(j, i, 'black', tileSize));
+        walls.push(new object(j, i, null, tileSize, wallImg));
         totalFloor.push('Estoy loco');
         /* ctx.fillStyle = 'black';
         ctx.fillRect(j * tileSize, i * tileSize, tileSize, tileSize); */
@@ -91,28 +120,42 @@ function draw() {
       }
     }
   }
+
+  // Esto es una cochinada terrible hermano, que perro asco
+  for (let i = 0; i < walls.length; i++) {
+    walls[i].paint(ctx);
+  }
+
+  for (let i = 0; i < floor.length; i++) {
+    floor[i].paint(ctx);
+  }
+
+  for (let i = 0; i < breakableWalls.length; i++) {
+    breakableWalls[i].paint(ctx);
+  }
+
+  if (isPaused) {
+    ctx.fillStyle = "rgba(0,0,0,0.7)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "white";
+    ctx.font = "20px Arial";
+    ctx.fillText("Game Paused", 487, 487);
+  }
+
 }
 
-draw();
-
-
-// Esto es una cochinada terrible hermano, que perro asco
-for (let i = 0; i < walls.length; i++) {
-  walls[i].paint(ctx);
-  // floor[i].paint(ctx);
-  // breakableWalls[i].paint(ctx);
+function playSound(sound) {
+  sound.pause();
+  sound.currentTime = 0;
+  sound.play();
 }
 
-for (let i = 0; i < floor.length; i++) {
-  // walls[i].paint(ctx);
-  floor[i].paint(ctx);
-  // breakableWalls[i].paint(ctx);
-}
-
-for (let i = 0; i < breakableWalls.length; i++) {
-  // walls[i].paint(ctx);
-  // floor[i].paint(ctx);
-  breakableWalls[i].paint(ctx);
-}
-
-/* setInterval(draw, 1000 / 60); */
+window.requestAnimationFrame = (function () {
+  return window.requestAnimationFrame ||
+    window.webkitRequestAnimationFrame ||
+    window.mozRequestAnimationFrame ||
+    function (callback) {
+      window.setTimeout(callback, 17);
+    };
+}());
+window.requestAnimationFrame(update);
