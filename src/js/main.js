@@ -1,6 +1,6 @@
 import { createGrid, removeObstacles } from './grid.js';
 import { inputController } from './input.js';
-import { object } from './object.js';
+/* import { object } from './object.js'; */
 
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
@@ -18,6 +18,22 @@ function updateVariables() {
 
 updateVariables();
 
+// Queria que Object fuera modulo pero ya no se que estoy haciendo, dios ayuda
+
+class object {
+  constructor(x, y, color, size) {
+    this.x = x;
+    this.y = y;
+    this.color = color;
+    this.size = size;
+  }
+
+  paint(ctx) {
+    ctx.fillStyle = this.color;
+    ctx.fillRect(this.x * this.size, this.y * this.size, this.size, this.size);
+  }
+}
+
 const grid = createGrid(rows, cols, amountOfObstacles);
 
 let x = 9;
@@ -32,7 +48,11 @@ removeObstacles(grid, x + 1, y, cols);
 removeObstacles(grid, x, y - 1, cols);
 removeObstacles(grid, x, y + 1, cols); */
 
+let totalFloor = [];
 let walls = [];
+let breakableWalls = [];
+let floor = [];
+let bombExp = [];
 
 function draw() {
 
@@ -42,25 +62,29 @@ function draw() {
       const cell = grid[i * cols + j];
       if (cell === 1) {
 
-        walls.push(new object(j, i, 'white', tileSize));
+        floor.push(new object(j, i, 'white', tileSize));
+        totalFloor.push('Estoy loco');
         /* ctx.fillStyle = 'white';
         ctx.fillRect(j * tileSize, i * tileSize, tileSize, tileSize); */
 
       } else if (cell === 2) {
 
-        walls.push(new object(j, i, 'orange', tileSize));
+        breakableWalls.push(new object(j, i, 'orange', tileSize));
+        totalFloor.push('Estoy loco');
         /* ctx.fillStyle = 'orange';
         ctx.fillRect(j * tileSize, i * tileSize, tileSize, tileSize); */
 
       } else if (cell === 3) {
 
-        walls.push(new object(j, i, 'blue', tileSize));
+        bombExp.push(new object(j, i, 'blue', tileSize));
+        totalFloor.push('Estoy loco');
         /* ctx.fillStyle = 'blue';
         ctx.fillRect(j * tileSize, i * tileSize, tileSize, tileSize); */
 
       } else {
 
         walls.push(new object(j, i, 'black', tileSize));
+        totalFloor.push('Estoy loco');
         /* ctx.fillStyle = 'black';
         ctx.fillRect(j * tileSize, i * tileSize, tileSize, tileSize); */
 
@@ -71,8 +95,24 @@ function draw() {
 
 draw();
 
-for (var i = walls.length - 1; i >= 0; i--) {
+
+// Esto es una cochinada terrible hermano, que perro asco
+for (let i = 0; i < walls.length; i++) {
   walls[i].paint(ctx);
+  // floor[i].paint(ctx);
+  // breakableWalls[i].paint(ctx);
+}
+
+for (let i = 0; i < floor.length; i++) {
+  // walls[i].paint(ctx);
+  floor[i].paint(ctx);
+  // breakableWalls[i].paint(ctx);
+}
+
+for (let i = 0; i < breakableWalls.length; i++) {
+  // walls[i].paint(ctx);
+  // floor[i].paint(ctx);
+  breakableWalls[i].paint(ctx);
 }
 
 /* setInterval(draw, 1000 / 60); */
