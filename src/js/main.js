@@ -7,14 +7,14 @@ let cols = 15;
 let tileSize = 65;
 var amountOfObstacles = 50;
 
-function updateVariables(newScreenWH) {
+function updateVariables() {
   const ratio = canvas.width / canvas.height;
   rows = Math.round(rows * ratio);
   cols = Math.round(cols * ratio);
   tileSize = Math.round(tileSize * ratio);
 }
 
-updateVariables(canvas.width);
+updateVariables();
 
 const grid = createGrid(rows, cols, amountOfObstacles);
 
