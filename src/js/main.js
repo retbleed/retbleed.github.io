@@ -23,6 +23,8 @@ let x = 9;
 let y = 5;
 
 removeObstacles(grid, x, y, cols);
+
+// ya no se ocupa esta cochinada, pero por si acaso
 /* removeObstacles(grid, x - 1, y, cols);
 removeObstacles(grid, x + 1, y, cols);
 removeObstacles(grid, x, y - 1, cols);
