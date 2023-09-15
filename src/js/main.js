@@ -1,6 +1,5 @@
 import { createGrid, removeObstacles } from './grid.js';
 import { inputController } from './input.js';
-/* import { object } from './object.js'; */
 
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
@@ -8,6 +7,8 @@ let rows = 15;
 let cols = 15;
 let tileSize = 65;
 var amountOfObstacles = 50;
+var score = 0;
+var playerLifes = 5;
 var isPaused = false;
 
 // let playerImg = new Image(); playerImg.src = "../media/sprites/wall.png";
@@ -34,6 +35,8 @@ class object {
     this.color = color;
     this.size = size;
     this.image = image;
+    this.lastX = x;
+    this.lastY = y;
   }
 
   paint(ctx) {
@@ -45,12 +48,12 @@ class object {
     }
   }
 
-  itCollides(target) {
-
-    if (this.x < target.x + target.w &&
-      this.x + this.w > target.x &&
-      this.y < target.y + target.h &&
-      this.y + this.h > target.y) {
+  itCollides(grid, x, y) {
+    const index = y * cols + x;
+    if (grid[index] === 0) {
+      return true;
+    }
+    if (grid[index] === 2) {
       return true;
     }
     return false;
@@ -58,7 +61,6 @@ class object {
 }
 
 const grid = createGrid(rows, cols, amountOfObstacles);
-// Make a function to find the spaces with 1 and put the player there
 let x;
 let y;
 for (let i = 0; i < grid.length; i++) {
@@ -69,40 +71,38 @@ for (let i = 0; i < grid.length; i++) {
   }
 }
 const player = new object(x, y, 'red', tileSize, null);
-inputController(player);
+inputController(player, isPaused);
 
 // removeObstacles(grid, x, y, cols, 3); // STATUS: BOMBA
 // removeObstacles(grid, x, y, cols, 1); // STATUS: CLEAN
-
-// ya no se ocupa esta cochinada, pero por si acaso
-/* removeObstacles(grid, x - 1, y, cols);
-removeObstacles(grid, x + 1, y, cols);
-removeObstacles(grid, x, y - 1, cols);
-removeObstacles(grid, x, y + 1, cols); */
 
 let walls = [];
 let breakableWalls = [];
 let floor = [];
 let bombExp = [];
 
-
 function update() {
   if (isPaused) { repaint(); window.requestAnimationFrame(update); return; }
 
-  
+  if (player.itCollides(grid, player.x, player.y)) {
+    player.x = player.lastX;
+    player.y = player.lastY;
+  }
+
+  player.lastX = player.x;
+  player.lastY = player.y;
 
   repaint();
   window.requestAnimationFrame(update);
 }
 
-
-
-
 function repaint() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   for (let i = 0; i < rows; i++) {
     for (let j = 0; j < cols; j++) {
+      
       const cell = grid[i * cols + j];
+
       if (cell === 1) {
         floor.push(new object(j, i, null, tileSize, floorImg));
       } else if (cell === 2) {
@@ -137,7 +137,6 @@ function repaint() {
     ctx.font = "20px Arial";
     ctx.fillText("Game Paused", 487, 487);
   }
-
 }
 
 function playSound(sound) {
