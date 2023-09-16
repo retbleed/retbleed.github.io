@@ -24,14 +24,15 @@ let playerImg = new Image(); playerImg.src = "src/media/sprites/player.png";
 let enemyImg = new Image(); enemyImg.src = "src/media/sprites/enemy.png";
 let bombImg = new Image(); bombImg.src = "src/media/sprites/bomb.png";
 let bombaImg = new Image(); bombaImg.src = "src/media/sprites/bombArea.png";
-
 let wallImg = new Image(); wallImg.src = "src/media/sprites/wall.png";
 let breakableWallImg = new Image(); breakableWallImg.src = "src/media/sprites/breakable_wall.png";
 let floorImg = new Image(); floorImg.src = "src/media/sprites/floor.png";
-// const sound1 = new Audio("source/sound/backSound.mp3");
-// const sound2 = new Audio("source/sound/deathSound.mp3");
-// const sound3 = new Audio("source/sound/winSound.mp3");
-// const sodido = new Audio("source/sound/bombSound.mp3");
+const bgm = new Audio("src/media/sound/bgm.mp3"); bgm.volume = 0.2;
+const playerDeath = new Audio("src/media/sound/death.mp3"); playerDeath.volume = 0.9;
+const playerWin = new Audio("src/media/sound/win.mp3"); playerWin.volume = 0.9;
+const playerMove = new Audio("src/media/sound/step.mp3"); playerMove.volume = 0.9;
+const bombBoom = new Audio("src/media/sound/explosion.mp3"); bombBoom.volume = 0.9;
+
 function updateVariables() {
   const ratio = canvas.width / canvas.height;
   rows = Math.round(rows * ratio);
@@ -112,8 +113,6 @@ class object {
         this.x = newX;
         this.y = newY;
       }
-
-      // console.log('Vidas del jugador: ' + playerLifes);
     }
   }
 }
@@ -123,6 +122,7 @@ function restartApp() {
 }
 
 function hasPlayerMoved(player) {
+  /* playSound(playerMove); */
   return player.x !== player.lastX || player.y !== player.lastY;
 }
 
@@ -150,10 +150,10 @@ for (let i = 0; i < grid.length; i++) {
 }
 generateEnemies(amountOfEnemies, grid)
 const player = new object(x, y, null, tileSize, playerImg);
-inputController(player, isPaused);
+inputController(player, playerMove);
 
 document.addEventListener('keydown', (event) => {
-  if (event.code === 'Space') {
+  if (event.code === 'KeyQ') {
     if (!masterS2) {
       playerBombLocationX = player.x;
       playerBombLocationY = player.y;
@@ -170,12 +170,14 @@ document.addEventListener('keydown', (event) => {
 
 function update() {
   if (isPaused) { repaint(); window.requestAnimationFrame(update); return; }
+  bgm.play();
 
   if (hasPlayerMoved(player) && stepCounter < 7 && masterS2) {
     stepCounter++;
 
     if (stepCounter == 5) {
       removeObstacles(grid, playerBombLocationX, playerBombLocationY, cols, 3);
+      bombBoom.play();
       score += 50;
     } else if (stepCounter == 6) {
       removeObstacles(grid, playerBombLocationX, playerBombLocationY, cols, 1);
@@ -247,9 +249,9 @@ function repaint() {
     score = Math.abs(Math.floor(((breakableWallsCount / amountOfObstacles) * 100) - 100));
   }
 
-  console.log(breakableWallsCount);
-
   if (breakableWallsCount <= 0) {
+    bgm.pause();
+    playerWin.play();
     ctx.fillStyle = "rgba(0,0,0,0.7)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = "white";
@@ -262,6 +264,8 @@ function repaint() {
   }
 
   if (playerLifes <= 0) {
+    playerDeath.play();
+    bgm.pause();
     ctx.fillStyle = "rgba(0,0,0,0.7)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = "white";
