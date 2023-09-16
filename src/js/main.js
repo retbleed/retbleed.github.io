@@ -1,4 +1,4 @@
- import { createGrid, removeObstacles } from './grid.js';
+import { createGrid, removeObstacles } from './grid.js';
 import { inputController } from './input.js';
 
 const canvas = document.getElementById('canvas');
@@ -9,7 +9,7 @@ let stepCounter = 0;
 let rows = 15;
 let cols = 15;
 let tileSize = 65;
-var amountOfObstacles = 2;
+var amountOfObstacles = 50;
 var score = 0;
 var playerLifes = 5;
 var amountOfEnemies = 5;
@@ -28,8 +28,10 @@ let bombaImg = new Image(); bombaImg.src = "src/media/sprites/bombArea.png";
 let wallImg = new Image(); wallImg.src = "src/media/sprites/wall.png";
 let breakableWallImg = new Image(); breakableWallImg.src = "src/media/sprites/breakable_wall.png";
 let floorImg = new Image(); floorImg.src = "src/media/sprites/floor.png";
-// const sound1 = new Audio("source/sound/luffyEatSound.mp3");
-
+// const sound1 = new Audio("source/sound/backSound.mp3");
+// const sound2 = new Audio("source/sound/deathSound.mp3");
+// const sound3 = new Audio("source/sound/winSound.mp3");
+// const sodido = new Audio("source/sound/bombSound.mp3");
 function updateVariables() {
   const ratio = canvas.width / canvas.height;
   rows = Math.round(rows * ratio);
@@ -111,9 +113,13 @@ class object {
         this.y = newY;
       }
 
-      console.log('Vidas del jugador: ' + playerLifes);
+      // console.log('Vidas del jugador: ' + playerLifes);
     }
   }
+}
+
+function restartApp() {
+  location.reload();
 }
 
 function hasPlayerMoved(player) {
@@ -146,15 +152,19 @@ generateEnemies(amountOfEnemies, grid)
 const player = new object(x, y, null, tileSize, playerImg);
 inputController(player, isPaused);
 
-
-
 document.addEventListener('keydown', (event) => {
   if (event.code === 'Space') {
-    if(!masterS2){
+    if (!masterS2) {
       playerBombLocationX = player.x;
       playerBombLocationY = player.y;
     }
     masterS2 = true;
+  }
+  if (event.code === 'KeyR') {
+    restartApp();
+  }
+  if (event.code === 'KeyP') {
+    isPaused = !isPaused;
   }
 });
 
@@ -234,13 +244,31 @@ function repaint() {
   }
 
   function updateScore() {
-    score = Math.abs(Math.floor(((breakableWallsCount / amountOfObstacles) * 100)- 100));
+    score = Math.abs(Math.floor(((breakableWallsCount / amountOfObstacles) * 100) - 100));
   }
 
-  if (breakableWallsCount === 0) {
-    console.log("YOU WIN");
+  console.log(breakableWallsCount);
+
+  if (breakableWallsCount <= 0) {
+    ctx.fillStyle = "rgba(0,0,0,0.7)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "white";
+    ctx.font = "20px Arial";
+    ctx.fillText("YOU WON", canvas.width / 2, canvas.height / 2);
+    ctx.fillText("PRESS 'R' TO RESTART", canvas.width / 2, (canvas.height / 2) - 50);
+    return;
   } else {
     updateScore();
+  }
+
+  if (playerLifes <= 0) {
+    ctx.fillStyle = "rgba(0,0,0,0.7)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "white";
+    ctx.font = "20px Arial";
+    ctx.fillText("YOU LOST", canvas.width / 2, canvas.height / 2);
+    ctx.fillText("PRESS 'R' TO RESTART", canvas.width / 2, (canvas.height / 2) - 50);
+    return;
   }
 
   // Esto es una cochinada terrible hermano, que perro asco
@@ -264,7 +292,7 @@ function repaint() {
     enemies[i].paint(ctx);
   }
 
-  if(masterS2){
+  if (masterS2) {
     ctx.drawImage(bombImg, playerBombLocationX * tileSize, playerBombLocationY * tileSize, tileSize, tileSize);
   }
 
@@ -277,7 +305,8 @@ function repaint() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = "white";
     ctx.font = "20px Arial";
-    ctx.fillText("Game Paused", 487, 487);
+    ctx.fillText("Game Paused", canvas.width / 2, canvas.height / 2);
+    return;
   }
 }
 
