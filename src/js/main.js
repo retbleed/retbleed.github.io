@@ -1,9 +1,10 @@
-import { createGrid, removeObstacles } from './grid.js';
+ import { createGrid, removeObstacles } from './grid.js';
 import { inputController } from './input.js';
 
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 const enemies = [];
+
 let stepCounter = 0;
 let rows = 15;
 let cols = 15;
@@ -13,8 +14,17 @@ var score = 0;
 var playerLifes = 5;
 var amountOfEnemies = 5;
 var isPaused = false;
+let x;
+let y;
+let masterS2 = false;
+let playerBombLocationX;
+let playerBombLocationY;
 
-// let playerImg = new Image(); playerImg.src = "../media/sprites/wall.png";
+let playerImg = new Image(); playerImg.src = "src/media/sprites/player.png";
+let enemyImg = new Image(); enemyImg.src = "src/media/sprites/enemy.png";
+let bombImg = new Image(); bombImg.src = "src/media/sprites/bomb.png";
+let bombaImg = new Image(); bombaImg.src = "src/media/sprites/bombArea.png";
+
 let wallImg = new Image(); wallImg.src = "src/media/sprites/wall.png";
 let breakableWallImg = new Image(); breakableWallImg.src = "src/media/sprites/breakable_wall.png";
 let floorImg = new Image(); floorImg.src = "src/media/sprites/floor.png";
@@ -118,14 +128,12 @@ function generateEnemies(amountOfEnemies, grid) {
       y = Math.floor(Math.random() * rows);
     } while (grid[y * cols + x] !== 1);
 
-    enemies.push(new object(x, y, 'orange', tileSize, null));
+    enemies.push(new object(x, y, null, tileSize, enemyImg));
   }
 }
 
 const grid = createGrid(rows, cols, amountOfObstacles);
-let x;
-let y;
-let masterS2 = false;
+
 
 for (let i = 0; i < grid.length; i++) {
   if (grid[i] === 1) {
@@ -135,11 +143,10 @@ for (let i = 0; i < grid.length; i++) {
   }
 }
 generateEnemies(amountOfEnemies, grid)
-const player = new object(x, y, 'red', tileSize, null);
+const player = new object(x, y, null, tileSize, playerImg);
 inputController(player, isPaused);
 
-let playerBombLocationX;
-let playerBombLocationY;
+
 
 document.addEventListener('keydown', (event) => {
   if (event.code === 'Space') {
@@ -199,7 +206,7 @@ function repaint() {
       } else if (cell === 2) {
         breakableWalls.push(new object(j, i, null, tileSize, breakableWallImg));
       } else if (cell === 3) {
-        bombExp.push(new object(j, i, 'blue', tileSize));
+        bombExp.push(new object(j, i, null, tileSize, bombaImg));
       } else {
         walls.push(new object(j, i, null, tileSize, wallImg));
       }
@@ -225,6 +232,10 @@ function repaint() {
 
   for (let i = 0; i < enemies.length; i++) {
     enemies[i].paint(ctx);
+  }
+
+  if(masterS2){
+    ctx.drawImage(bombImg, playerBombLocationX * tileSize, playerBombLocationY * tileSize, tileSize, tileSize);
   }
 
   player.paint(ctx);
