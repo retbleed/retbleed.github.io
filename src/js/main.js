@@ -20,6 +20,8 @@ let masterS2 = false;
 let playerBombLocationX;
 let playerBombLocationY;
 
+
+
 let playerImg = new Image(); playerImg.src = "src/media/sprites/player.png";
 let enemyImg = new Image(); enemyImg.src = "src/media/sprites/enemy.png";
 let bombImg = new Image(); bombImg.src = "src/media/sprites/bomb.png";
@@ -32,6 +34,27 @@ const playerDeath = new Audio("src/media/sound/death.mp3"); playerDeath.volume =
 const playerWin = new Audio("src/media/sound/win.mp3"); playerWin.volume = 0.9;
 const playerMove = new Audio("src/media/sound/step.mp3"); playerMove.volume = 0.9;
 const bombBoom = new Audio("src/media/sound/explosion.mp3"); bombBoom.volume = 0.9;
+
+let seconds = 0;
+let minutes = 0;
+let hours = 0;
+
+function startTimer() {
+  setInterval(() => {
+    seconds++;
+    if (seconds >= 60) {
+      seconds = 0;
+      minutes++;
+      if (minutes >= 60) {
+        minutes = 0;
+        hours++;
+      }
+    }
+    updateTimerDisplay();
+  }, 1000);
+}
+
+startTimer();
 
 function updateVariables() {
   const ratio = canvas.width / canvas.height;
@@ -204,8 +227,9 @@ function update() {
 function drawText() {
   ctx.fillStyle = "white";
   ctx.font = "20px Arial";
-  ctx.fillText("SCORE: " + score, 20, 30);
-  ctx.fillText("LIVES: " + playerLifes, 20, 50);
+  ctx.fillText("SCORE: " + score, 20, 20);
+  ctx.fillText("LIVES: " + playerLifes, 20, 40);
+  ctx.fillText(`TIME: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`, 20, 60);
 }
 
 function repaint() {
@@ -264,6 +288,7 @@ function repaint() {
   }
 
   if (playerLifes <= 0) {
+    
     playerDeath.play();
     bgm.pause();
     ctx.fillStyle = "rgba(0,0,0,0.7)";
