@@ -3,12 +3,15 @@ import { inputController } from './input.js';
 
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
+const enemies = [];
+let stepCounter = 0;
 let rows = 15;
 let cols = 15;
 let tileSize = 65;
-var amountOfObstacles = 50;
+var amountOfObstacles = 70;
 var score = 0;
 var playerLifes = 5;
+var amountOfEnemies = 5;
 var isPaused = false;
 
 // let playerImg = new Image(); playerImg.src = "../media/sprites/wall.png";
@@ -56,13 +59,74 @@ class object {
     if (grid[index] === 2) {
       return true;
     }
+    if (grid[index] === 3) {
+      playerLifes--;
+      return true;
+    }
     return false;
+  }
+
+  checkCollisions(enemy) {
+    if (this.x === enemy.x && this.y === enemy.y) {
+      playerLifes--;
+    }
+  }
+
+  move(grid, target) {
+    const directions = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+    const validDirections = [];
+
+    for (let i = 0; i < directions.length; i++) {
+      const [dx, dy] = directions[i];
+      const x = this.x + dx;
+      const y = this.y + dy;
+      const index = y * cols + x;
+
+      if (x >= 0 && x < cols && y >= 0 && y < rows && grid[index] === 1) {
+        validDirections.push(directions[i]);
+      }
+    }
+
+    if (validDirections.length > 0 && Math.random() < 0.01) {
+      const [dx, dy] = validDirections[Math.floor(Math.random() * validDirections.length)];
+      const newX = this.x + dx;
+      const newY = this.y + dy;
+
+      if (newX === target.x && newY === target.y) {
+        playerLifes--;
+      } else {
+        this.lastX = this.x;
+        this.lastY = this.y;
+        this.x = newX;
+        this.y = newY;
+      }
+
+      console.log('Vidas del jugador: ' + playerLifes);
+    }
+  }
+}
+
+function hasPlayerMoved(player) {
+  return player.x !== player.lastX || player.y !== player.lastY;
+}
+
+function generateEnemies(amountOfEnemies, grid) {
+  for (let i = 0; i < amountOfEnemies; i++) {
+    let x, y;
+    do {
+      x = Math.floor(Math.random() * cols);
+      y = Math.floor(Math.random() * rows);
+    } while (grid[y * cols + x] !== 1);
+
+    enemies.push(new object(x, y, 'orange', tileSize, null));
   }
 }
 
 const grid = createGrid(rows, cols, amountOfObstacles);
 let x;
 let y;
+let masterS2 = false;
+
 for (let i = 0; i < grid.length; i++) {
   if (grid[i] === 1) {
     x = i % cols;
@@ -70,37 +134,64 @@ for (let i = 0; i < grid.length; i++) {
     break;
   }
 }
+generateEnemies(amountOfEnemies, grid)
 const player = new object(x, y, 'red', tileSize, null);
 inputController(player, isPaused);
 
-// removeObstacles(grid, x, y, cols, 3); // STATUS: BOMBA
-// removeObstacles(grid, x, y, cols, 1); // STATUS: CLEAN
+let playerBombLocationX;
+let playerBombLocationY;
 
-let walls = [];
-let breakableWalls = [];
-let floor = [];
-let bombExp = [];
+document.addEventListener('keydown', (event) => {
+  if (event.code === 'Space') {
+    if(!masterS2){
+      playerBombLocationX = player.x;
+      playerBombLocationY = player.y;
+    }
+    masterS2 = true;
+  }
+});
 
 function update() {
   if (isPaused) { repaint(); window.requestAnimationFrame(update); return; }
+
+  if (hasPlayerMoved(player) && stepCounter < 7 && masterS2) {
+    stepCounter++;
+
+    if (stepCounter == 5) {
+      removeObstacles(grid, playerBombLocationX, playerBombLocationY, cols, 3);
+      score += 50;
+    } else if (stepCounter == 6) {
+      removeObstacles(grid, playerBombLocationX, playerBombLocationY, cols, 1);
+      stepCounter = 0;
+      masterS2 = false;
+    }
+  }
 
   if (player.itCollides(grid, player.x, player.y)) {
     player.x = player.lastX;
     player.y = player.lastY;
   }
-
   player.lastX = player.x;
   player.lastY = player.y;
+
+  for (let i = 0; i < enemies.length; i++) {
+    enemies[i].move(grid, player);
+  }
 
   repaint();
   window.requestAnimationFrame(update);
 }
 
 function repaint() {
+  let walls = [];
+  let breakableWalls = [];
+  let floor = [];
+  let bombExp = [];
+
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   for (let i = 0; i < rows; i++) {
     for (let j = 0; j < cols; j++) {
-      
+
       const cell = grid[i * cols + j];
 
       if (cell === 1) {
@@ -126,6 +217,14 @@ function repaint() {
 
   for (let i = 0; i < breakableWalls.length; i++) {
     breakableWalls[i].paint(ctx);
+  }
+
+  for (let i = 0; i < bombExp.length; i++) {
+    bombExp[i].paint(ctx);
+  }
+
+  for (let i = 0; i < enemies.length; i++) {
+    enemies[i].paint(ctx);
   }
 
   player.paint(ctx);

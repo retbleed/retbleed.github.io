@@ -25,9 +25,6 @@ export const createGrid = (rows, cols, amountOfObstacles) => {
 };
 
 export function removeObstacles(grid, x, y, cols, state) {
-  if (!Array.isArray(grid)) {
-    throw new Error('Grid must be an array'); // Por alguna razon esta madre quiebra si no esta ahi
-  }
   for (let i = 0; i < grid.length; i++) {
     const row = Math.floor(i / cols);
     const col = i % cols;
