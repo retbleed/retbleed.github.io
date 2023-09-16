@@ -9,7 +9,7 @@ let stepCounter = 0;
 let rows = 15;
 let cols = 15;
 let tileSize = 65;
-var amountOfObstacles = 70;
+var amountOfObstacles = 2;
 var score = 0;
 var playerLifes = 5;
 var amountOfEnemies = 5;
@@ -189,6 +189,13 @@ function update() {
   window.requestAnimationFrame(update);
 }
 
+function drawText() {
+  ctx.fillStyle = "white";
+  ctx.font = "20px Arial";
+  ctx.fillText("SCORE: " + score, 20, 30);
+  ctx.fillText("LIVES: " + playerLifes, 20, 50);
+}
+
 function repaint() {
   let walls = [];
   let breakableWalls = [];
@@ -211,6 +218,29 @@ function repaint() {
         walls.push(new object(j, i, null, tileSize, wallImg));
       }
     }
+  }
+
+  let breakableWallsCount = 0;
+
+  for (let i = 0; i < rows; i++) {
+    for (let j = 0; j < cols; j++) {
+
+      const cell = grid[i * cols + j];
+
+      if (cell === 2) {
+        breakableWallsCount++;
+      }
+    }
+  }
+
+  function updateScore() {
+    score = Math.abs(Math.floor(((breakableWallsCount / amountOfObstacles) * 100)- 100));
+  }
+
+  if (breakableWallsCount === 0) {
+    console.log("YOU WIN");
+  } else {
+    updateScore();
   }
 
   // Esto es una cochinada terrible hermano, que perro asco
@@ -239,6 +269,8 @@ function repaint() {
   }
 
   player.paint(ctx);
+
+  drawText();
 
   if (isPaused) {
     ctx.fillStyle = "rgba(0,0,0,0.7)";
